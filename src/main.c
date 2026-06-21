@@ -1,21 +1,23 @@
 #include <raylib.h>
-
+#include "boilerplate.h"
 int main(void) {
 
-    InitWindow(200, 100, "raylib [core] example - basic window");
-
+    RenderTexture2D target;
+    const int GS_W = 1920;
+    const int GS_H = 1080;
+    target = BOILERPLATE_init(GS_W, GS_H, "physics");
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+        float scale = BOILERPLATE_adjust_mouse_to_scale(GS_W, GS_H);
 
-        BeginDrawing();
-
+        BeginTextureMode(target);
             ClearBackground(RAYWHITE);
 
             DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
-        EndDrawing();
+        EndTextureMode();
+        BOILERPLATE_draw_to_screen(target, GS_W, GS_H, scale);
     }
 
     CloseWindow();        // Close window and OpenGL context

@@ -2,9 +2,9 @@ CC = gcc
 IDIR = ../include
 ODIR = ../obj
 T_CFLAGS = -I$(IDIR) -Wall -Wextra
-_DEPS = 
+_DEPS = boilerplate.h
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
-_OBJ = main.o 
+_OBJ = main.o boilerplate.o
 OBJ = $(patsubst %, $(ODIR)/%, $(_OBJ))
 PROJECT = ../physics
 RL_CFLAGS :=  $(shell pkg-config --cflags raylib)
@@ -18,3 +18,8 @@ $(ODIR)/%.o: %.c $(DEPS)
 
 all: $(OBJ)
 	$(CC) -o $(PROJECT) $^ $(LIBS)
+
+.PHONY: clean
+
+clean: 
+	rm -f $(ODIR)/*.o *~ core $(IDIR)/*~
