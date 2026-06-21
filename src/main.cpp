@@ -15,7 +15,6 @@ int main(void) {
         BeginTextureMode(target);
             ClearBackground(RAYWHITE);
 
-            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
         EndTextureMode();
         BOILERPLATE_draw_to_screen(target, GS_W, GS_H, scale);
     }

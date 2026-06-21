@@ -20,7 +20,7 @@ RenderTexture2D BOILERPLATE_init(int game_screen_width, int game_screen_height, 
 float BOILERPLATE_adjust_mouse_to_scale(int game_screen_width, int game_screen_height) {
     float scale = MIN((float)GetScreenWidth()/game_screen_width, (float)GetScreenHeight()/game_screen_height);
     Vector2 mouse = GetMousePosition();
-    Vector2 virtualMouse = { 0 };
+    Vector2 virtualMouse = { 0,0 };
     virtualMouse.x = (mouse.x - (GetScreenWidth() - (game_screen_width*scale))*0.5f)/scale;
     virtualMouse.y = (mouse.y - (GetScreenHeight() - (game_screen_height*scale))*0.5f)/scale;
     virtualMouse = Vector2Clamp(
