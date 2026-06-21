@@ -12,4 +12,9 @@ class Body {
         void update_position(float dt);
         Vector2 get_velocity(float dt);
 };
-
+struct Vector2Dir {
+    float magnitude; //m
+    float theta; //rad
+};
+Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi);
+Vector2 vector_mag_and_dir_to_vector_components(Vector2Dir vi);
