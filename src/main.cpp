@@ -11,7 +11,7 @@ int main(void) {
     target = BOILERPLATE_init(GS_W, GS_H, "physics");
     SetTargetFPS(60);
 
-    Body body{CENTER, (Vector2){30.0f, 0}, (Vector2){30.0f, 0}, PHYSICS_DT};
+    Body body{CENTER, (Vector2){30.0f, 0}, (Vector2){30.0f, 0}, 1, PHYSICS_DT};
     float time_accum = 0.0f;
     Vector2 tv[] = {
         {1, 0},
@@ -41,6 +41,8 @@ int main(void) {
 
         }
         BeginTextureMode(target);
+            DrawText(TextFormat("Energy: %.2f J", body.get_kinetic_energy()), 10, 10, 40, BLACK);
+            DrawText(TextFormat("Velocity: %.2f m/s", body.get_speed()), 10, 60, 40, BLACK);
             ClearBackground(RAYWHITE);
             DrawCircleV(body.position, 3.0f, BLACK);
         EndTextureMode();
