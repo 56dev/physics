@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <cmath>
+#include <cstddef>
 #include "core.h"
 void Body::update_position(float dt) {
     Vector2 tp = position;
@@ -13,12 +14,10 @@ void Body::update_position(float dt) {
 Body::Body(
         Vector2 p_pos, 
         Vector2 p_vel, 
-        Vector2 p_accel, 
         float p_mass,
         float dt) 
     : position{p_pos}, 
     velocity {p_vel},
-    acceleration {p_accel},
     mass {p_mass}
 
      {
@@ -41,6 +40,19 @@ float Body::get_potential_energy_with_reference_height(float ref) {
 float Body::get_potential_energy() {
     return Body::get_potential_energy_with_reference_height(0);
 }
+void Body::add_force(Vector2Dir force) {
+    forces.push_back(force);
+}
+void Body::update_acceleration(){
+    Vector2 total_force = {0, 0};
+    for(std::size_t i = 0; i < forces.size(); ++i) {
+        Vector2 fv = vector_mag_and_dir_to_vector_components(forces[i]);
+        total_force = Vector2Add(total_force, fv);
+    }
+    Vector2 accel = Vector2Scale(total_force, 1.0f / mass);
+    acceleration = accel;
+}
+
 
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi){
     Vector2Dir vr{0, 0};
@@ -55,3 +67,4 @@ Vector2 vector_mag_and_dir_to_vector_components(Vector2Dir vi) {
     vr.y = vi.magnitude * std::sin(vi.theta);
     return vr;
 }
+
