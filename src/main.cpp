@@ -11,17 +11,17 @@ int main(void) {
     target = BOILERPLATE_init(GS_W, GS_H, "physics");
     SetTargetFPS(60);
 
-    Body body{CENTER, (Vector2){30.0f, 0}, 1, (Vector2){10, 10}, PHYSICS_DT};
-    body.add_force((Vector2Dir){30.0f, 0});
+    Body body{CENTER, (Vector2){30.0f, 0}, 1, 2, PHYSICS_DT};
     float time_accum = 0.0f;
     while (!WindowShouldClose())
     {
         time_accum += GetFrameTime();
         float scale = BOILERPLATE_adjust_mouse_to_scale(GS_W, GS_H);
         while(time_accum >= PHYSICS_DT) {
-            body.update_acceleration();
+            body.apply_force((Vector2Dir){30.0f, 0});
             body.apply_gravity();
             body.update_position(PHYSICS_DT);
+            body.reset_acceleration();
             time_accum -= PHYSICS_DT;
 
         }
@@ -29,7 +29,7 @@ int main(void) {
             DrawText(TextFormat("Energy: %.2f J", body.get_kinetic_energy()), 10, 10, 40, BLACK);
             DrawText(TextFormat("Velocity: %.2f m/s", body.get_speed()), 10, 60, 40, BLACK);
             ClearBackground(RAYWHITE);
-            DrawRectangle(body.position.x - body.hitbox.x/2, body.position.y - body.hitbox.x/2, body.hitbox.x, body.hitbox.y, BLACK);
+            DrawCircleV(body.position, body.radius, BLACK);
         EndTextureMode();
         BOILERPLATE_draw_to_screen(target, GS_W, GS_H, scale);
     }
