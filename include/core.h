@@ -2,10 +2,12 @@
 #include <raylib.h>
 #include <vector>
 #define PHYSICS_DT (1.0f / 60.0f)
+#define G_ACCEL 9.81f * 10
 struct Vector2Dir {
     float magnitude; //m
     float theta; //rad
 };
+
 class Body {
     private:
         Vector2 previous_position;
@@ -14,14 +16,17 @@ class Body {
         Vector2 velocity; //m/s
         Vector2 acceleration; //m/s^2
         float mass;
+        Vector2 hitbox; //length and width in m
         std::vector<Vector2Dir> forces;
-        Body(Vector2 p_pos, Vector2 p_vel, float p_mass, float dt); 
+        Body(Vector2 p_pos, Vector2 p_vel, float p_mass, Vector2 p_hitbox, float dt); 
         void update_position(float dt);
         void update_acceleration();
+        void apply_gravity();
         float get_speed();
         float get_kinetic_energy();
         float get_potential_energy();
         float get_potential_energy_with_reference_height(float h);
+        void get_collisions(std::vector<Body>);
         void add_force(Vector2Dir force);
 };
 

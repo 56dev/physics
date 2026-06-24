@@ -15,10 +15,12 @@ Body::Body(
         Vector2 p_pos, 
         Vector2 p_vel, 
         float p_mass,
+        Vector2 p_hitbox,
         float dt) 
     : position{p_pos}, 
     velocity {p_vel},
-    mass {p_mass}
+    mass {p_mass},
+    hitbox {p_hitbox}
 
      {
 
@@ -27,7 +29,9 @@ Body::Body(
 float Body::get_speed() {
     return Vector2Length(velocity);
 }
-
+void Body::apply_gravity() {
+    acceleration.y -= G_ACCEL;
+}
 float Body::get_kinetic_energy() {
     float v = Vector2Length(velocity);
     return 0.5 * mass * v * v;
