@@ -52,6 +52,14 @@ void Body::reset_acceleration(){
     acceleration = (Vector2){0, 0};
 }
 
+Barrier::Barrier(
+            Vector2 p_start,
+            Vector2 p_end,
+            float p_rf 
+        ) 
+    : start {p_start},
+    end {p_end},
+    restitution_factor {p_rf} {}
 
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi){
     Vector2Dir vr{0, 0};

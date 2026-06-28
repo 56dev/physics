@@ -29,6 +29,13 @@ class Body {
         void get_collisions(std::vector<Body>);
         void apply_force(Vector2Dir force);
 };
+class Barrier {
+    public:
+        Vector2 start;
+        Vector2 end;
+        float restitution_factor;
+        Barrier(Vector2 p_start, Vector2 p_end, float p_rf);
+};
 
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi);
 Vector2 vector_mag_and_dir_to_vector_components(Vector2Dir vi);
