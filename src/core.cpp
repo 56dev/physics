@@ -61,6 +61,93 @@ Barrier::Barrier(
     end {p_end},
     restitution_factor {p_rf} {}
 
+QuadTreeNode::QuadTreeNode(std::size_t p_capacity, Rectangle p_bounds) : 
+    capacity {p_capacity},
+    bounds {p_bounds},
+    parent {NULL},
+    upper_left {NULL},
+   upper_right {NULL},
+  lower_right {NULL},
+ lower_left {NULL},
+divided {false},
+       leaf {true} 
+
+    {
+
+}
+
+QuadTreeNode::QuadTreeNode(std::size_t p_capacity, Rectangle p_bounds, QuadTreeNode* p_parent) :
+    capacity {p_capacity},
+    bounds {p_bounds},
+    parent {p_parent},
+    upper_left {NULL},
+    upper_right {NULL},
+    lower_right {NULL},
+    lower_left {NULL},
+    divided {false},
+    leaf {true} {}
+bool QuadTreeNode::insert_all(std::vector<Body>& bodies) {
+    bool ret = true;
+    for(std::size_t i = 0; i < bodies.size(); ++i) {
+        if(insert(&bodies[i])) ret = false;
+    }
+    return ret;
+}
+bool QuadTreeNode::insert(Body* body) {
+    if(!CheckCollisionCircleRec(body->position, body->radius, bounds)) {
+        //unable to insert the body
+        return false;
+    }
+    if(bodies.size() < capacity && divided == false) {
+        bodies.push_back(body);
+        return true;
+    }
+    if(divided == false) {
+        subdivide();
+    }
+    if(upper_left->insert(body) | upper_right->insert(body) | lower_right->insert(body) | lower_left->insert(body)) return true;
+    return false;
+    
+}
+
+void QuadTreeNode::subdivide() {
+    upper_left = new QuadTreeNode(capacity, (Rectangle){bounds.x, bounds.y, bounds.width / 2, bounds.height / 2}, this);
+    upper_right = new QuadTreeNode(capacity, (Rectangle){bounds.x + bounds.width/2, bounds.y, bounds.width / 2, bounds.height / 2}, this);
+    lower_right = new QuadTreeNode(capacity, (Rectangle){bounds.x + bounds.width/2, bounds.y + bounds.height/2, bounds.width / 2, bounds.height / 2}, this);
+    lower_left = new QuadTreeNode(capacity, (Rectangle){bounds.x, bounds.y + bounds.height/2, bounds.width / 2, bounds.height / 2}, this);
+    for(std::size_t i = 0; i < bodies.size(); ++i) {
+       Body* body = bodies[i];
+       upper_left->insert(body);
+       upper_right->insert(body);
+       lower_right->insert(body);
+       lower_left->insert(body);
+    }
+    bodies.clear();
+    divided = true;
+    leaf = false;
+}
+
+std::vector<Body> Debug::generate_random_bodies(Rectangle bounds, std::size_t n, float v_mag, float dt) {
+    std::vector<Body> ret;
+    for(std::size_t i = 0; i < n; ++i) {
+        Vector2 p;
+        p.x = GetRandomValue(bounds.x + 1, bounds.x + bounds.width - 1);
+        p.y = GetRandomValue(bounds.y + 1, bounds.y + bounds.height - 1);
+        ret.push_back(Body(p, (Vector2){0, 0}, 1, 3, dt));
+    }
+    return ret;
+}
+
+void Debug::draw_quad_tree_nodes(QuadTreeNode* root) {
+    DrawRectangleLinesEx(root->bounds, 2.0f, RED);
+    if(root->divided == true) {
+        draw_quad_tree_nodes(root->upper_left);
+        draw_quad_tree_nodes(root->upper_right);
+        draw_quad_tree_nodes(root->lower_right);
+        draw_quad_tree_nodes(root->lower_left);
+    }
+}
+
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi){
     Vector2Dir vr{0, 0};
     vr.magnitude = Vector2Length(vi);
