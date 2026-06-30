@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <cmath>
 #include <cstddef>
+#include <numbers>
 #include "core.h"
 void Body::update_position(float dt) {
     Vector2 tp = position;
@@ -20,7 +21,8 @@ Body::Body(
     : position{p_pos}, 
     velocity {p_vel},
     mass {p_mass},
-    radius {p_radius}
+    radius {p_radius},
+    acceleration {(Vector2){0,0}}
 
      {
 
@@ -107,9 +109,28 @@ bool QuadTreeNode::insert(Body* body) {
     }
     if(upper_left->insert(body) | upper_right->insert(body) | lower_right->insert(body) | lower_left->insert(body)) return true;
     return false;
-    
 }
 
+void clear_quad_tree(QuadTreeNode* node) {    
+    if(node == NULL) {
+        return;
+    }
+    clear_quad_tree(node->upper_left);
+    delete node->upper_left;
+    node->upper_left = NULL;
+    clear_quad_tree(node->upper_right);
+    delete node->upper_right;
+    node->upper_right = NULL;
+    clear_quad_tree(node->lower_right);
+    delete node->lower_right;
+    node->lower_right = NULL;
+    clear_quad_tree(node->lower_left);
+    delete node->lower_left;
+    node->lower_left = NULL;
+    
+    node->divided = false;
+    node->leaf = true;
+}
 void QuadTreeNode::subdivide() {
     upper_left = new QuadTreeNode(capacity, (Rectangle){bounds.x, bounds.y, bounds.width / 2, bounds.height / 2}, this);
     upper_right = new QuadTreeNode(capacity, (Rectangle){bounds.x + bounds.width/2, bounds.y, bounds.width / 2, bounds.height / 2}, this);
@@ -131,15 +152,20 @@ std::vector<Body> Debug::generate_random_bodies(Rectangle bounds, std::size_t n,
     std::vector<Body> ret;
     for(std::size_t i = 0; i < n; ++i) {
         Vector2 p;
+        Vector2 v;
+        float angle = GetRandomValue(0, 359) * std::numbers::pi / 180.0f;
         p.x = GetRandomValue(bounds.x + 1, bounds.x + bounds.width - 1);
         p.y = GetRandomValue(bounds.y + 1, bounds.y + bounds.height - 1);
-        ret.push_back(Body(p, (Vector2){0, 0}, 1, 3, dt));
+        
+        v.x = v_mag * std::cos(angle);
+        v.y = v_mag * std::sin(angle);
+        ret.push_back(Body(p, v, 1, 3, dt));
     }
     return ret;
 }
 
 void Debug::draw_quad_tree_nodes(QuadTreeNode* root) {
-    DrawRectangleLinesEx(root->bounds, 2.0f, RED);
+    DrawRectangleLinesEx(root->bounds, 1.0f, RED);
     if(root->divided == true) {
         draw_quad_tree_nodes(root->upper_left);
         draw_quad_tree_nodes(root->upper_right);

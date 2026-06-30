@@ -37,6 +37,8 @@ class Barrier {
         Barrier(Vector2 p_start, Vector2 p_end, float p_rf);
 };
 class QuadTreeNode {
+    private:
+        bool discovered; //this is used for dfs when clearing;
     public:
         std::size_t capacity;
         Rectangle bounds; 
@@ -53,10 +55,10 @@ class QuadTreeNode {
         bool insert_all(std::vector<Body>&);
         bool insert(Body* body);
         void subdivide();
-        int return_number_of_bodies(); //returns -1 if leaf == false. else, returns bodies.size().
         
 
 };
+void clear_quad_tree(QuadTreeNode* node);
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi);
 Vector2 vector_mag_and_dir_to_vector_components(Vector2Dir vi);
 
