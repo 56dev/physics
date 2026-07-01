@@ -1,24 +1,35 @@
 #pragma once
 #include <raylib.h>
 #include <vector>
+#include <variant>
 #define PHYSICS_DT (1.0f / 60.0f)
 #define G_ACCEL 9.81f
 struct Vector2Dir {
     float magnitude; //m
     float theta; //rad
 };
-
+struct Circle {
+    Vector2 position;
+    float radius;
+};
+struct Line {
+    Vector2 start;
+    Vector2 end;
+};
+using Shape = std::variant<Circle, Rectangle, Line>;
 class Body {
     private:
         Vector2 previous_position;
+        void init_previous_position(Vector2, float);
     public:
         Vector2 position; //m
         Vector2 velocity; //m/s
         Vector2 acceleration; //m/s^2
         float mass;
-        float radius;
+        Shape shape;
+        bool is_rigid;
         std::vector<Vector2Dir> forces;
-        Body(Vector2 p_pos, Vector2 p_vel, float p_mass, float p_radius, float dt); 
+        Body(Vector2 p_pos, Vector2 p_vel, float p_mass, Shape p_shape, float dt); 
         void update_position(float dt);
         void reset_acceleration();
         void apply_gravity();
@@ -26,8 +37,8 @@ class Body {
         float get_kinetic_energy();
         float get_potential_energy();
         float get_potential_energy_with_reference_height(float h);
-        void get_collisions(std::vector<Body>);
         void apply_force(Vector2Dir force);
+        
 };
 class Barrier {
     public:
@@ -37,8 +48,6 @@ class Barrier {
         Barrier(Vector2 p_start, Vector2 p_end, float p_rf);
 };
 class QuadTreeNode {
-    private:
-        bool discovered; //this is used for dfs when clearing;
     public:
         std::size_t capacity;
         Rectangle bounds; 
@@ -62,8 +71,8 @@ void clear_quad_tree(QuadTreeNode* node);
 Vector2Dir vector_components_to_vector_mag_and_dir(Vector2 vi);
 Vector2 vector_mag_and_dir_to_vector_components(Vector2Dir vi);
 
-namespace Debug {
 
+namespace Debug {
     std::vector<Body> generate_random_bodies(Rectangle bounds, std::size_t n, float v_mag, float dt);
     void draw_quad_tree_nodes(QuadTreeNode* root);
 }

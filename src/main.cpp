@@ -3,6 +3,7 @@
 #include <cstddef>
 #include "boilerplate.h"
 #include "core.h"
+#include "draw.h"
 #include <numbers>
 void line_world_with_barriers (std::vector<Barrier>& barriers, Vector2 origin, int GS_W, int GS_H) {
     Vector2 upleft = origin;
@@ -21,14 +22,20 @@ int main(void) {
     const int GS_W{1920};
     const int GS_H{1080};
     Vector2 CENTER{GS_W / 2, GS_H / 2};
-    SetConfigFlags(FLAG_WINDOW_TOPMOST);
+    //SetConfigFlags(FLAG_WINDOW_TOPMOST);
+    
     target = BOILERPLATE_init(GS_W, GS_H, "physics");
     SetTargetFPS(60);
 
-    Body body{CENTER, (Vector2){30.0f, 0}, 1, 2, PHYSICS_DT};
     QuadTreeNode root = QuadTreeNode(4uz, (Rectangle){0, 0, GS_W, GS_H});
     std::vector<Barrier> barriers;
-    std::vector<Body> rbodies = Debug::generate_random_bodies((Rectangle){0, 0, GS_W, GS_H}, 1000, 3, PHYSICS_DT);
+    std::vector<Body> rbodies = Debug::generate_random_bodies((Rectangle){0, 0, GS_W, GS_H}, 4, 3, PHYSICS_DT);
+    rbodies.push_back(Body((Vector2){100, 200}, (Vector2){0, 0}, 1, (Rectangle){-50, -50, 100, 100}, PHYSICS_DT));
+    /*rbodies.push_back(
+            Body(
+                (Vector2){0, 500}, Vector2(0, 0), 1, (Line){(Vector2){0, 0}, (Vector2){1000, 0}}, PHYSICS_DT
+                )
+            );*/
     line_world_with_barriers(barriers, (Vector2){0,0}, GS_W, GS_H);
     float time_accum = 0.0f;
     while (!WindowShouldClose())
@@ -36,31 +43,27 @@ int main(void) {
         time_accum += GetFrameTime();
         float scale = BOILERPLATE_adjust_mouse_to_scale(GS_W, GS_H);
         BeginTextureMode(target);
+        ClearBackground(RAYWHITE);
         while(time_accum >= PHYSICS_DT) {
-            root.insert_all(rbodies);
             for(std::size_t i = 0; i < rbodies.size(); ++i) {
                 rbodies[i].update_position(PHYSICS_DT);
 
             }
-            body.apply_force((Vector2Dir){30.0f, 0});
-            body.apply_gravity();
-            body.update_position(PHYSICS_DT);
-            body.reset_acceleration();
-            Debug::draw_quad_tree_nodes(&root);
-            clear_quad_tree(&root);
             time_accum -= PHYSICS_DT;
 
         }
+            root.insert_all(rbodies);
+            Debug::draw_quad_tree_nodes(&root);
+            clear_quad_tree(&root);
+
+            draw_bodies(rbodies);
+        /*
             DrawText(TextFormat("Energy: %.2f J", body.get_kinetic_energy()), 10, 10, 40, BLACK);
             DrawText(TextFormat("Velocity: %.2f m/s", body.get_speed()), 10, 60, 40, BLACK);
-            ClearBackground(RAYWHITE);
             DrawCircleV(body.position, body.radius, BLACK);
-            for(std::size_t i = 0; i < rbodies.size(); ++i) {
-                DrawCircleV(rbodies[i].position, rbodies[i].radius, BLACK);
-            }
-            for(std::size_t i = 0; i < barriers.size(); ++i) {
-                DrawLineEx(barriers[i].start, barriers[i].end, 3.0f, BLACK);
-            }
+            */
+            
+            
         EndTextureMode();
         BOILERPLATE_draw_to_screen(target, GS_W, GS_H, scale);
     }

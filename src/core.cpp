@@ -12,21 +12,23 @@ void Body::update_position(float dt) {
     velocity.x = (position.x - previous_position.x) / dt;
     velocity.y = (position.y - previous_position.y) / dt;
 }
+void Body::init_previous_position(Vector2 p_vel, float dt) {
+    previous_position = Vector2Subtract(position, Vector2Scale(p_vel, dt));
+}
 Body::Body(
         Vector2 p_pos, 
         Vector2 p_vel, 
         float p_mass,
-        float p_radius,
+        Shape p_shape,
         float dt) 
     : position{p_pos}, 
     velocity {p_vel},
     mass {p_mass},
-    radius {p_radius},
+    shape {p_shape},
     acceleration {(Vector2){0,0}}
 
      {
-
-    previous_position = Vector2Subtract(position, Vector2Scale(p_vel, dt));
+    init_previous_position(p_vel, dt);
 }
 float Body::get_speed() {
     return Vector2Length(velocity);
@@ -91,15 +93,40 @@ QuadTreeNode::QuadTreeNode(std::size_t p_capacity, Rectangle p_bounds, QuadTreeN
 bool QuadTreeNode::insert_all(std::vector<Body>& bodies) {
     bool ret = true;
     for(std::size_t i = 0; i < bodies.size(); ++i) {
-        if(insert(&bodies[i])) ret = false;
+        if(!insert(&bodies[i])) ret = false;
     }
     return ret;
 }
 bool QuadTreeNode::insert(Body* body) {
-    if(!CheckCollisionCircleRec(body->position, body->radius, bounds)) {
+    if(std::holds_alternative<Circle>(body->shape)) {
+        Circle c = std::get<Circle>(body->shape);
+        if(!CheckCollisionCircleRec(Vector2Add(body->position, c.position), c.radius, bounds)) {
         //unable to insert the body
-        return false;
+            return false;
+        }    
+    } else if(std::holds_alternative<Rectangle>(body->shape)) {
+        Rectangle r = std::get<Rectangle>(body->shape);
+        Rectangle rec = (Rectangle){body->position.x + r.x, body->position.y + r.y, r.width, r.height};
+        if(!CheckCollisionRecs(rec, bounds)) {
+            return false;
+        }
+    } else if(std::holds_alternative<Line>(body->shape)) {
+        Line l = std::get<Line>(body->shape);
+        Vector2 out;
+        Line l1{(Vector2){bounds.x, bounds.y}, (Vector2){bounds.x, bounds.y + bounds.height}};
+        Line l2{(Vector2){bounds.x, bounds.y + bounds.height}, (Vector2){bounds.x + bounds.width, bounds.y + bounds.height}};
+        Line l3{(Vector2){bounds.x + bounds.width, bounds.y + bounds.height}, (Vector2){bounds.x + bounds.width, bounds.y}};
+        Line l4{(Vector2){bounds.x + bounds.width, bounds.y}, (Vector2){bounds.x, bounds.y}};
+        if(!CheckCollisionLines(l.start, l.end, l1.start, l1.end, &out) &&
+            !CheckCollisionLines(l.start, l.end, l2.start, l2.end, &out) &&
+            !CheckCollisionLines(l.start, l.end, l3.start, l3.end, &out) && 
+            !CheckCollisionLines(l.start, l.end, l4.start, l4.end, &out) && 
+            !(CheckCollisionPointRec(l.start, bounds) && CheckCollisionPointRec(l.end, bounds))
+        ) {
+            return false;
+        }
     }
+    
     if(bodies.size() < capacity && divided == false) {
         bodies.push_back(body);
         return true;
@@ -128,6 +155,7 @@ void clear_quad_tree(QuadTreeNode* node) {
     delete node->lower_left;
     node->lower_left = NULL;
     
+    node->bodies.clear();
     node->divided = false;
     node->leaf = true;
 }
@@ -159,7 +187,7 @@ std::vector<Body> Debug::generate_random_bodies(Rectangle bounds, std::size_t n,
         
         v.x = v_mag * std::cos(angle);
         v.y = v_mag * std::sin(angle);
-        ret.push_back(Body(p, v, 1, 3, dt));
+        ret.push_back(Body(p, v, 1, (Circle){(Vector2){0, 0}, 3.0f}, dt));
     }
     return ret;
 }
